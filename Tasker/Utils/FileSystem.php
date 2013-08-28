@@ -83,7 +83,7 @@ class FileSystem
 	 * @param $source
 	 * @param $dest
 	 * @param bool $need
-	 * @return bool
+	 * @return void
 	 * @throws \ErrorException
 	 */
 	public static function cp($source, $dest, $need = true)
@@ -92,14 +92,20 @@ class FileSystem
 			throw new \ErrorException('File "' . $source . '" not found.');
 		}
 
-		$file = pathinfo($dest);
-		$destFolder = str_replace(DIRECTORY_SEPARATOR . $file['filename'], '', $dest);
-
-		if (!file_exists($destFolder)) {
-			static::mkDir($destFolder, true, 0777, $need);
+		$dir = opendir($source);
+		static::mkDir($dest);
+		while(false !== ( $file = readdir($dir)) ) {
+			if (( $file != '.' ) && ( $file != '..' )) {
+				if ( is_dir($source . DIRECTORY_SEPARATOR . $file) ) {
+					static::cp($source . DIRECTORY_SEPARATOR . $file,$dest . DIRECTORY_SEPARATOR . $file);
+				}
+				else {
+					copy($source . DIRECTORY_SEPARATOR . $file,$dest . DIRECTORY_SEPARATOR . $file);
+				}
+			}
 		}
 
-		return copy($source, $dest);
+		closedir($dir);
 	}
 
 }
