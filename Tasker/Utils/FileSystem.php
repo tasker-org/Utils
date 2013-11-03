@@ -59,7 +59,7 @@ class FileSystem
 			return true;
 		}
 
-		foreach (\Tasker\Utils\Finder::find('*')->from($dir)->childFirst() as $file) {
+		foreach (new \RecursiveDirectoryIterator($dir) as $file) {
 			if (false === static::rm($file, $need)) {
 				return false;
 			}
