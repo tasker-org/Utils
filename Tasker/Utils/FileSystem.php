@@ -11,6 +11,64 @@ class FileSystem
 {
 
 	/**
+	 * @param $file
+	 * @param bool $need
+	 * @return bool
+	 * @throws \Exception
+	 */
+	public static function rm($file, $need = true)
+	{
+		if (is_dir((string)$file)) {
+			return static::rmDir($file, false, $need);
+		}
+
+		if (false === ($result = @unlink((string)$file)) && $need) {
+			throw new \Exception("Unable to delete file '$file'");
+		}
+
+		return $result;
+	}
+
+
+	/**
+	 * @param $dir
+	 * @param bool $recursive
+	 * @param bool $need
+	 * @return bool
+	 * @throws \Exception
+	 */
+	public static function rmDir($dir, $recursive = true, $need = true)
+	{
+		$recursive && self::cleanDir($dir = (string)$dir, $need);
+		if (is_dir($dir) && false === ($result = @rmdir($dir)) && $need) {
+			throw new \Exception("Unable to delete directory '$dir'.");
+		}
+
+		return isset($result) ? $result : true;
+	}
+
+	/**
+	 * @param string $dir
+	 * @param bool   $need
+	 *
+	 * @return bool
+	 */
+	public static function cleanDir($dir, $need = true)
+	{
+		if (!file_exists($dir)) {
+			return true;
+		}
+
+		foreach (\Tasker\Utils\Finder::find('*')->from($dir)->childFirst() as $file) {
+			if (false === static::rm($file, $need)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * @param $dir
 	 * @param bool $recursive
 	 * @param int $chmod
