@@ -59,9 +59,11 @@ class FileSystem
 			return true;
 		}
 
-		foreach (new \RecursiveDirectoryIterator($dir) as $file) {
-			if (false === static::rm($file, $need)) {
-				return false;
+		if(is_dir($dir)){
+			$files = glob($dir . DIRECTORY_SEPARATOR . '*', GLOB_MARK ); //GLOB_MARK adds a slash to directories returned
+
+			foreach($files as $file) {
+				static::rm($file, $need);
 			}
 		}
 
